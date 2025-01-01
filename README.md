@@ -131,7 +131,7 @@ Contains all database-related files.
 
 ---
 
-## Basics of Backend with JavaScript
+# Basics of Backend with JavaScript
 
 This README introduces the fundamentals of backend development using Node.js and Express, covering essential concepts, commands, and best practices.
 
@@ -264,5 +264,118 @@ This README introduces the fundamentals of backend development using Node.js and
        console.log(`Example app listening on port ${process.env.PORT}`);
      });
      ```
+
+---
+
+# Data Modeling
+
+In the `models` folder, we define the schema for our application's data using **Mongoose**. Each schema represents a unique data structure and adheres to MongoDB's standard practices. These schemas are later used to interact with the database.
+
+---
+
+## Naming Convention for Models
+- Files are named to reflect the purpose of each model.
+- Common naming conventions (industry standards):
+  - `user.models.js`
+  - `todo.models.js`
+  - `sub_todo.models.js`
+
+---
+
+## Designing Data Models
+
+### Basic User Model Example
+```javascript
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema({
+  username: String, 
+  email: String, 
+  isActive: Boolean
+});
+
+export const User = mongoose.model("User", userSchema);
+```
+**Note:**
+- The model name `User` is converted to **`users`** (plural) in the database, following MongoDB's standardized practice.
+
+---
+
+### Advanced User Model Example
+Instead of simple fields, we can define advanced configurations for more robust data validation and functionality:
+```javascript
+import mongoose from "mongoose";
+
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+  },
+  password: {
+    type: String,
+    required: true,
+  },
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+});
+
+export const User = mongoose.model("User", userSchema);
+```
+**Key Points:**
+- `type`: Specifies the data type (e.g., `String`, `Boolean`).
+- `required`: Ensures the field is mandatory.
+- `unique`: Enforces uniqueness (e.g., for `username` or `email`).
+- `lowercase`: Converts strings to lowercase for consistency.
+- `default`: Sets a default value when the field is not provided.
+
+---
+
+## Referencing Other Models
+
+### Foreign References in Data Models
+To link documents across collections, we use **ObjectId** references.
+
+#### Example: Todo Model
+The `todo` schema references:
+1. The user who created the task (`createdBy` field).
+2. Sub-todos associated with the task (`subTodos` field).
+
+```javascript
+import mongoose from "mongoose";
+
+const todoSchema = new mongoose.Schema({
+  complete: {
+    type: Boolean,
+    default: false,
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User", // References the "User" model
+  },
+  subTodos: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "subTodo", // References the "subTodo" model
+    },
+  ],
+});
+
+export const Todo = mongoose.model("Todo", todoSchema);
+```
+
+**Key Points:**
+- **`type: mongoose.Schema.Types.ObjectId`**: Represents a reference to another document.
+- **`ref`**: Specifies the referenced model.
+- Foreign references allow querying related data efficiently.
 
 ---
