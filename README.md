@@ -617,3 +617,183 @@ Update the `package.json` to enable ES Modules and dotenv compatibility:
 
 ---
 
+# Custom API Response and Error Handling
+
+This section explains how to set up **CORS**, middleware, and utility functions for handling API responses and errors in a Node.js project.
+
+---
+
+## 1. **What is CORS?**
+**CORS (Cross-Origin Resource Sharing)** is a mechanism that allows your server to accept requests from domains other than its own.  
+- **Example**: If your backend is running on `http://api.example.com` and your frontend is running on `http://example.com`, CORS ensures they can communicate.  
+- **Why it’s important?** For security, browsers block requests to different origins by default. CORS specifies what is allowed.
+
+### Setting Up CORS
+```javascript
+import cors from "cors";
+
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN, // Allow requests from this origin
+    credentials: true, // Enable sending cookies with requests
+  })
+);
+```
+Define `CORS_ORIGIN` in your `.env` file with the URL of your frontend (e.g., `http://localhost:3000`).
+
+---
+
+## 2. **Setting Up the Application**
+
+### Install Dependencies
+```bash
+npm install cookie-parser cors
+```
+
+### Application Setup (`app.js`)
+```javascript
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+
+const app = express();
+
+// Enable CORS
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
+  })
+);
+
+// Middleware for parsing JSON and URL-encoded data
+app.use(express.json({ limit: "16kb" })); // Limit JSON payload size
+app.use(express.urlencoded({ extended: true, limit: "16kb" })); // Limit URL-encoded payload size
+
+// Serve static files from the "public" folder
+app.use(express.static("public"));
+
+// Parse cookies
+app.use(cookieParser());
+
+export default app;
+```
+
+---
+
+## 3. **What is Middleware?**
+
+Middleware functions are operations executed during the lifecycle of a request and response. They act as intermediaries between the client’s request and the server’s response.
+
+### Example Workflow:
+1. **Request**: A user sends a request to `/instagram`.
+2. **Middleware**: Before the request reaches the route handler, middleware validates the user’s login status.
+3. **Response**: If valid, the request is processed, and a response is sent to the user.
+
+### Anatomy of Middleware
+```javascript
+function exampleMiddleware(req, res, next) {
+  // Perform some operations, e.g., check user authentication
+  console.log("Middleware triggered");
+
+  // Call the next middleware/route handler
+  next();
+}
+```
+
+---
+
+## 4. **Creating Utility Functions for API Responses**
+
+The `utils.js` file contains reusable helper functions for consistent error and success responses.
+
+### Code: `utils.js`
+```javascript
+function createError(error) {
+  return { status: "error", error: error.message || error };
+}
+
+function createSuccess(data) {
+  return { status: "success", data };
+}
+
+function createResult(error, data) {
+  if (error) {
+    return createError(error);
+  } else {
+    return createSuccess(data);
+  }
+}
+
+module.exports = {
+  createError,
+  createSuccess,
+  createResult,
+};
+```
+
+### Explanation:
+1. **`createError`**:
+   - Generates a standard error response format.
+   - Example:
+     ```json
+     {
+       "status": "error",
+       "error": "User not found"
+     }
+     ```
+2. **`createSuccess`**:
+   - Generates a standard success response format.
+   - Example:
+     ```json
+     {
+       "status": "success",
+       "data": {
+         "userId": "12345"
+       }
+     }
+     ```
+3. **`createResult`**:
+   - Combines both `createError` and `createSuccess` to determine the appropriate response based on the presence of an error.
+
+---
+
+## 5. **Putting It All Together**
+
+### Example: Using Middleware and Utility Functions
+```javascript
+import express from "express";
+import { createError, createSuccess, createResult } from "./utils.js";
+
+const app = express();
+
+app.use(express.json());
+
+// Example middleware
+app.use((req, res, next) => {
+  console.log("Request received:", req.method, req.url);
+  next();
+});
+
+// Example route with utility function
+app.get("/example", (req, res) => {
+  try {
+    const data = { message: "Hello, World!" };
+    res.status(200).json(createSuccess(data));
+  } catch (error) {
+    res.status(500).json(createError(error));
+  }
+});
+
+// Error handling middleware
+app.use((error, req, res, next) => {
+  res.status(500).json(createError(error));
+});
+
+app.listen(process.env.PORT, () => {
+  console.log(`Server is running on port ${process.env.PORT}`);
+});
+```
+
+---
+
