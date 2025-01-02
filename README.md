@@ -379,3 +379,87 @@ export const Todo = mongoose.model("Todo", todoSchema);
 - Foreign references allow querying related data efficiently.
 
 ---
+
+# Setting Up the Project
+
+This section explains how to initialize and organize your project, configure essential tools, and streamline development processes.
+
+---
+
+## 1. Maintaining Empty Folders in Git
+Git does not push empty folders by default. To ensure specific folders are included in the repository (even when empty), use a `.gitkeep` file:
+1. Create an empty file named `.gitkeep` in the folder.
+2. Add and commit it to the repository:
+   ```bash
+   git add .
+   git commit -m "Added .gitkeep to preserve folder structure"
+   ```
+
+---
+
+## 2. Code Formatting with Prettier
+**Prettier** is a popular code formatting tool that ensures consistency across the codebase.
+
+### Installing Prettier
+1. Add Prettier as a dev dependency:
+   ```bash
+   npm install -D prettier
+   ```
+
+### Prettier Configuration
+2. Create a `.prettierrc` file in the root directory and add the following configurations:
+   ```json
+   {
+     "singleQuote": false,
+     "bracketSpacing": true,
+     "tabWidth": 2,
+     "trailingComma": "es5",
+     "semi": true
+   }
+   ```
+   - **singleQuote**: Use double quotes for consistency (`false`).
+   - **bracketSpacing**: Add spaces inside brackets (`true`).
+   - **tabWidth**: Set indentation to 2 spaces.
+   - **trailingComma**: Add trailing commas in ES5-compliant cases.
+   - **semi**: End statements with semicolons (`true`).
+
+### Ignoring Files with Prettier
+3. Create a `.prettierignore` file to exclude files and folders from formatting:
+   ```
+   /.vscode
+   /node_modules
+   ./dist
+
+   *.env
+   .env
+   .env.*
+   ```
+
+---
+
+## 3. Dev Dependencies for Development
+**Dev dependencies** are packages used during development but not required in production.
+
+### Example: Using Nodemon
+- **Nodemon** automatically restarts the server when changes are detected, improving development efficiency.
+
+1. Install Nodemon as a dev dependency:
+   ```bash
+   npm install -D nodemon
+   ```
+
+2. Update `package.json` to include a development script:
+   ```json
+   {
+     "scripts": {
+       "dev": "nodemon src/index.js"
+     }
+   }
+   ```
+
+3. Run the server in development mode:
+   ```bash
+   npm run dev
+   ```
+
+---
